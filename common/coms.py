@@ -16,7 +16,8 @@ Typical usage:
     coms.create_parameter(bundle,name_dict,com_dict)
 """
 import socket
-import imagezmq_modified as imagezmq
+import common.imagezmq_modified as imagezmq
+
 
 class ComInst:
     """An object initializing the communication instance.
@@ -44,19 +45,19 @@ class ComInst:
 
     def __init__(self, direction, port, mode):
         """Initializes the class and calls its methods."""
-        self.direction = direction      #either 'send' or 'recv'
-        self.port = port                #4digit number
-        self.mode = mode                #either 'REQ_REP' or 'PUB_SUB'
+        self.direction = direction  # either 'send' or 'recv'
+        self.port = port  # 4digit number
+        self.mode = mode  # either 'REQ_REP' or 'PUB_SUB'
         self.instance = None
         self.name = socket.gethostname()
         self.address = None
-        #Call init functions
+        # Call init functions
         self.validate_input()
         self.establish_connection()
 
     def validate_input(self):
         """Validates the input of class creation."""
-        if self.direction != 'send' and self.direction != 'recv':
+        if self.direction != "send" and self.direction != "recv":
             raise ValueError("Invalid direction argument, must be 'send' or 'recv'")
         if int(self.port) > 9999:
             raise ValueError("Invalid port number, use 4digit integer")
@@ -65,33 +66,33 @@ class ComInst:
 
     def create_address(self):
         """Chooses the right address creator."""
-        if self.direction == 'send':
+        if self.direction == "send":
             self.address_send()
-        elif self.direction == 'recv':
+        elif self.direction == "recv":
             self.address_recv()
 
     def establish_connection(self):
         """Chooses the method of instance creation."""
-        if self.direction == 'send':
+        if self.direction == "send":
             self.create_address()
             self.connect_send()
-        elif self.direction == 'recv':
+        elif self.direction == "recv":
             self.create_address()
             self.connect_recv()
 
     def address_send(self):
         """Creates a valid server address."""
-        if self.mode == 'REQ_REP':
-            self.address = 'tcp://localhost:' + str(self.port)
-        elif self.mode == 'PUB_SUB':
-            self.address = 'tcp://*:' + str(self.port)
+        if self.mode == "REQ_REP":
+            self.address = "tcp://localhost:" + str(self.port)
+        elif self.mode == "PUB_SUB":
+            self.address = "tcp://*:" + str(self.port)
 
     def address_recv(self):
         """Creates a valid client address."""
-        if self.mode == 'REQ_REP':
-            self.address = 'tcp://*:' + str(self.port)
-        elif self.mode == 'PUB_SUB':
-            self.address = 'tcp://localhost:' + str(self.port)
+        if self.mode == "REQ_REP":
+            self.address = "tcp://*:" + str(self.port)
+        elif self.mode == "PUB_SUB":
+            self.address = "tcp://localhost:" + str(self.port)
 
     def connect_send(self):
         """Creates a server communication object."""
@@ -103,22 +104,22 @@ class ComInst:
 
     def send(self, msg):
         """Checks whether the instance can send, if it does, send a message."""
-        if self.direction == 'send':
+        if self.direction == "send":
             self.instance.send_image(self.name, msg)
         else:
             raise TypeError("This object is not able to send a message.")
 
     def recv(self):
         """Checks whether the instance can recieve, if it does, recieves a message."""
-        if self.direction == 'recv':
+        if self.direction == "recv":
             name, response = self.instance.recv_image()
             return name, response
         else:
             raise TypeError("This object is not able to recieve a message")
 
-    def send_reply(self, msg=b'OK'):
+    def send_reply(self, msg=b"OK"):
         """Checks whether the instance can recieve and is in REQ_REP mode. If so, sends a reply."""
-        if self.direction == 'recv' and self.mode == 'REQ_REP':
+        if self.direction == "recv" and self.mode == "REQ_REP":
             self.instance.send_reply(msg)
         else:
             raise TypeError("This object is not able to send a reply")
@@ -126,6 +127,7 @@ class ComInst:
     def close(self):
         """Closes the communication instance."""
         self.instance.close()
+
 
 class Parameters:
     """An object initializing the parameters.
@@ -175,6 +177,7 @@ class Parameters:
             if self.update_flag[k] is True:
                 com_inst.send()
 
+
 def create_parameter(bundle, names, coms):
     """Takes an established names(dict) and coms(dict) and updates it with data from bundle(dict)"""
     name = bundle["name"]
@@ -184,13 +187,14 @@ def create_parameter(bundle, names, coms):
     direction = bundle["direction"]
     port = bundle["port"]
     mode = bundle["mode"]
-    #instanciate
+    # instanciate
     cominst = ComInst(direction, port, mode)
-    par_dict = {name:value}
-    coms_dict = {name:cominst}
-    #update the given values
+    par_dict = {name: value}
+    coms_dict = {name: cominst}
+    # update the given values
     names.update(par_dict)
     coms.update(coms_dict)
+
 
 def bundle_parameters(bundles):
     """Handles the creation of parameters and communication dictionaries."""
